@@ -12,16 +12,16 @@ const deviceStorage = {
 	 * @return {Promise}
 	 */
 	get(key) {
-		if(!Array.isArray(key)) {
-			return AsyncStorage.getItem(key).then(value => {
-				return JSON.parse(value);
-			});
+		if(Array.isArray(key)) {
+            return AsyncStorage.multiGet(key).then(values => {
+                return values.map(value => {
+                    return JSON.parse(value[1]);
+                });
+            });
 		} else {
-			return AsyncStorage.multiGet(key).then(values => {
-				return values.map(value => {
-					return JSON.parse(value[1]);
-				});
-			});
+            return AsyncStorage.getItem(key).then(value => {
+                return JSON.parse(value);
+            });
 		}
 	},
 
@@ -32,13 +32,13 @@ const deviceStorage = {
 	 * @return {Promise}
 	 */
 	save(key, value) {
-		if(!Array.isArray(key)) {
-			return AsyncStorage.setItem(key, JSON.stringify(value));
+		if(Array.isArray(key)) {
+            var kvPairs = key.map(function(kvPair) {
+                return [kvPair[0], JSON.stringify(kvPair[1])];
+            });
+            return AsyncStorage.multiSet(kvPairs);
 		} else {
-			var kvPairs = key.map(function(kvPair) {
-				return [kvPair[0], JSON.stringify(kvPair[1])];
-			});
-			return AsyncStorage.multiSet(kvPairs);
+            return AsyncStorage.setItem(key, JSON.stringify(value));
 		}
 	},
 
